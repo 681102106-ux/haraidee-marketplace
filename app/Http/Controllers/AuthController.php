@@ -19,21 +19,17 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        // 1. ตรวจสอบข้อมูลที่รับมาจากฟอร์ม
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255', 
-            // หมายเหตุ: เรายังไม่ใส่ unique:users เพราะเราใช้ Composite Index (university_id + email)
             'password' => 'required|min:6|confirmed', 
         ]);
 
-        // 2. ตรวจสอบว่าอีเมลนี้ซ้ำในมหาวิทยาลัยนี้หรือไม่?
         $exists = User::where('email', $request->email)->exists();
         if ($exists) {
             return back()->withErrors(['email' => 'อีเมลนี้ถูกใช้งานแล้วในมหาวิทยาลัยนี้'])->withInput();
         }
 
-        // 3. สร้าง User ลง Database (university_id จะถูกใส่ให้อัตโนมัติจาก Trait)
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -41,10 +37,8 @@ class AuthController extends Controller
             'role' => 'student', 
         ]);
 
-        
         Auth::login($user);
 
-        // 5. ส่งไปหน้า Feed
         return redirect()->route('products.index');
     }
 
@@ -63,21 +57,22 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Auth::attempt จะเช็กอีเมล+รหัสผ่าน และเช็ก university_id ให้อัตโนมัติ
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate(); // ป้องกันขโมย Session
+            $request->session()->regenerate(); 
             
-            // 🔥 หัวใจหลัก: เช็ก Role แล้วแยกทางเดิน!
             $role = Auth::user()->role;
 
-            if ($role === 'uni_admin') {
-                return redirect()->route('admin.dashboard'); // ไปหน้าแอดมินมหาลัย
-            } elseif ($role === 'super_admin') {
-                return redirect()->route('super.dashboard'); // ไปหน้าแอดมินระบบหลัก
+            if ($role === 'super_admin') {
+                return redirect()->route('super.dashboard');
+            } elseif ($role === 'uni_admin') {
+                return redirect()->route('admin.dashboard'); 
             }
 
-            // ถ้าเป็น student ให้ไปหน้า Feed ตลาดนัด
-            return redirect()->route('products.index');
+            if (tenant()) {
+                return redirect()->route('products.index');
+            } else {
+                return redirect()->route('central.welcome');
+            }
         }
 
         return back()->withErrors([
@@ -85,11 +80,19 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
+    // ==========================================
+    // 3. ระบบออกจากระบบ (Logout)
+    // ==========================================
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('products.index');
+        
+        if (tenant()) {
+            return redirect()->route('products.index');
+        } else {
+            return redirect()->route('central.welcome');
+        }
     }
 }

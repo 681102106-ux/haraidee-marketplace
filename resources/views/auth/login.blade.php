@@ -8,7 +8,7 @@
             <p class="text-gray-500 mt-2">ตลาดนัด {{ tenant('name') }}</p>
         </div>
 
-        <form method="POST" action="/login" class="space-y-5">
+        <form action="{{ url()->current() }}" method="POST">
             @csrf
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">อีเมลนักศึกษา</label>

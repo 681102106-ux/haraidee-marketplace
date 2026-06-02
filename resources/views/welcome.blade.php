@@ -26,7 +26,7 @@
     </div>
     @isset($backdoorUni)
     <div style="position: fixed; bottom: 20px; right: 20px;">
-        <a href="http://{{ $backdoorUni->domain }}:8080/super/dashboard"
+        <a href="{{ route('super.login') }}" 
             style="background: #1a1a1a; color: white; padding: 10px 15px; border-radius: 20px; text-decoration: none; font-size: 0.8em; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); opacity: 0.5; transition: 0.3s;"
             onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">
             👑 Super Admin Login

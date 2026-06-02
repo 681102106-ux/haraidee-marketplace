@@ -73,14 +73,6 @@ Route::middleware([
         Route::post('/transactions/{transaction}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
         // ==========================================
-        // SUPER ADMIN (ซ่อนอยู่ในนี้ก่อน)
-        // ==========================================
-        Route::get('/super/dashboard', [SuperAdminController::class, 'index'])->name('super.dashboard');
-        Route::post('/super/universities', [SuperAdminController::class, 'store'])->name('super.universities.store');
-        Route::post('/super/universities/{university}/admins', [SuperAdminController::class, 'createAdmin'])->name('super.universities.admins.store');
-        Route::patch('/super/universities/{university}/toggle-status', [SuperAdminController::class, 'toggleStatus'])->name('super.universities.toggle_status');
-
-        // ==========================================
         // UNI ADMIN
         // ==========================================
         Route::prefix('admin')->group(function () {
